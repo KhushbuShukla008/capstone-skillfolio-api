@@ -7,6 +7,8 @@ import 'dotenv/config';
 import authRoutes from './routes/auth.js';
 import portfolioRoutes from './routes/portfolio.js';
 import resumeRoutes from './routes/resume.js';
+import repoRoutes from './routes/repo.js';
+import githubRoutes from './routes/github.js';
 
 const db = knex(knexConfig.development);
 
@@ -19,11 +21,13 @@ app.use(cors());
 app.use('/auth', authRoutes);
 app.use('/portfolio', portfolioRoutes);
 app.use('/resume', resumeRoutes);
+app.use('/repo', repoRoutes);
+app.use('/github', githubRoutes);
 
 app.get('/', (req, res) => {
-  res.send('Welcome to Skillfolio API');
+res.send('Welcome to Skillfolio API');
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+console.log(`Server is running on port ${PORT}`);
 });

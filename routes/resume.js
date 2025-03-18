@@ -1,20 +1,18 @@
-const express = require('express');
-const router = express.Router();
-const jsPDF = require('jspdf');
+import express from 'express';
+import githubService from '../services/githubService.js';
 
-router.post('/', async (req, res) => {
-  const { userId, resumeData } = req.body;
+const router = express.Router();
+
+// Example resume route
+router.get('/:userId', async (req, res) => {
+  const { userId } = req.params;
+  // Fetch user data from GitHub using githubService
   try {
-    const doc = new jsPDF();
-    doc.text('Resume', 10, 10);
-    doc.text(JSON.stringify(resumeData), 10, 20);
-    const pdfBuffer = doc.output('arraybuffer');
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=resume.pdf');
-    res.send(Buffer.from(pdfBuffer));
+    const userData = await githubService.getUserData(userId);
+    res.json(userData);
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-module.exports = router;
+export default router;
