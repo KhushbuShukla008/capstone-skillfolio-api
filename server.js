@@ -5,6 +5,7 @@ import knex from 'knex';
 import knexConfig from './knexfile.js';
 import 'dotenv/config';
 import authRoutes from './routes/auth.js';
+import oauthRoutes from './routes/oauth.js';
 import portfolioRoutes from './routes/portfolio.js';
 import resumeRoutes from './routes/resume.js';
 import repoRoutes from './routes/repo.js';
@@ -18,7 +19,13 @@ const PORT = process.env.PORT || 8080;
 app.use(bodyParser.json());
 app.use(cors());
 
+app.use((req, res, next) => {
+console.log(`${req.method} ${req.url}`);
+next();
+});
+
 app.use('/auth', authRoutes);
+app.use('/oauth', oauthRoutes);
 app.use('/portfolio', portfolioRoutes);
 app.use('/resume', resumeRoutes);
 app.use('/repo', repoRoutes);
@@ -26,6 +33,11 @@ app.use('/github', githubRoutes);
 
 app.get('/', (req, res) => {
 res.send('Welcome to Skillfolio API');
+});
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Something went wrong!' });
 });
 
 app.listen(PORT, () => {
