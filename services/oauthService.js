@@ -17,12 +17,20 @@ try {
     }, {
     headers: { Accept: 'application/json' },
     });
+    console.log('GitHub response:', response.data);
+    const accessToken = response.data.access_token;
+    
+    const userResponse = await axios.get('https://api.github.com/user', {
+        headers: { Authorization: `token ${accessToken}` },
+    });
+        console.log('GitHub user response:', userResponse.data);
+        const userId = userResponse.data.id;
 
-    return response.data.access_token;
-} catch (error) {
+    return { accessToken, userId };
+    }   catch (error) {
     console.error('Error getting access token:', error.response ? error.response.data : error.message);
     throw error;
 }
 };
 
-export default getAccessToken;
+export default { getAccessToken };
