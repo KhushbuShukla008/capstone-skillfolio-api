@@ -40,7 +40,7 @@ try {
                     avatar_url: avatar_url || '', 
                     github_user_id: githubUserId
                 }).returning('*');
-                user = user[0];
+                user = newUser;
             }
         }
         if (!user) {
@@ -52,7 +52,7 @@ try {
                 avatar_url: avatar_url || '', 
                 github_user_id: githubUserId 
             }).returning('*');  
-            user = user[0];  
+            user = newUser;  
         }
 
 

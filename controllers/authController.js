@@ -14,7 +14,13 @@ try {
         return res.status(400).json({ error: 'Missing required fields' });
     }
     const user = await authService.registerUser({ username, email, password, githubUsername });
-    res.status(201).json({ user, token: user.token });
+    res.status(201).json({ user: { 
+        id: user.id, 
+        username: user.username, 
+        email: user.email, 
+        githubUsername: user.githubUsername || 'No GitHub Username' 
+    }, 
+    token: user.token });
 } catch (error) {
     res.status(400).json({ error: error.message });
 }
@@ -23,20 +29,23 @@ try {
 const loginUser = async (req, res) => {
 try {
     const { email, password, githubUsername } = req.body;
-    const { token, userId, username, githubUsername: existingGithubUsername} = await authService.loginUser({email, password, githubUsername });
+    const { githubToken, userId, username, githubUsername: existingGithubUsername} = await authService.loginUser({email, password, githubUsername });
 
     if (githubUsername && existingGithubUsername !== githubUsername) {
         console.warn('GitHub username mismatch detected. Updating GitHub username.');
         await authService.updateGithubUsername(userId, githubUsername);
     }
-    
-    res.status(200).json({ token, 
+    if (githubToken) {
+    res.status(200).json({ token: githubToken, 
         user: { 
             id: userId, 
             username, 
             githubUsername: existingGithubUsername || 'No GitHub Username',
             loginMethod: githubUsername ? 'GitHub OAuth' : 'Email & Password' }});
-} catch (error) {
+        } else {
+            return res.status(400).json({ error: 'No token found' }); 
+        }
+    } catch (error) {
     res.status(400).json({ error: error.message });
 }
 };

@@ -28,12 +28,15 @@ const fetchAllPages = async (url, accessToken) => {
       });
 
       if (response.headers['x-ratelimit-remaining'] === '0') {
+        const resetTime = response.headers['x-ratelimit-reset'];
         console.warn('Rate limit exceeded. Try again later.');
-        throw new Error('GitHub API rate limit exceeded.');
+        await waitForRateLimitReset(resetTime);
+        continue;
       }
+      const linkHeader = response.headers['link'];
+      hasNextPage = linkHeader && linkHeader.includes('rel="next"');
 
       results = [...results, ...response.data];
-      hasNextPage = response.data.length === 100;
       page++;
     } catch (error) {
       console.error('Error fetching paginated data:', error.response ? error.response.data : error.message);

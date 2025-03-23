@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import db from '../config/db.js';
+import axios from 'axios';
 
 const registerUser = async ({ username, email, password, githubUsername }) => {
 const existingUser = await db('users').where({ email }).first();
@@ -8,8 +8,11 @@ if (existingUser) throw new Error('User already exists');
 
 const hashedPassword = await bcrypt.hash(password, 10);
 const [userId] = await db('users').insert({ username, email, password: hashedPassword, github_username: githubUsername });
-const token = jwt.sign({ id: userId, username }, process.env.JWT_SECRET, { expiresIn: '5m' });
-return { id: userId, username, email, githubUsername, token };
+const githubToken = process.env.GITHUB_TOKEN;
+    if (!githubToken) {
+        throw new Error('GitHub token not found in .env file');
+    }
+return { id: userId, username, email, githubUsername, token: githubToken  };
 };
 
 const loginUser = async ({ email, password, githubUsername }) => {
@@ -30,13 +33,33 @@ if (githubUsername && existingGithubUsername !== githubUsername) {
     await updateGithubUsername(user.id, githubUsername);
 }
 
-const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '5m' });
-console.log('Login token and userId:', token, user.id, user.username, user.github_username);
-return { token, userId: user.id, username: user.username, githubUsername: existingGithubUsername};
+const githubToken = process.env.GITHUB_TOKEN;
+        if (!githubToken) {
+            throw new Error('GitHub token not found in .env file');
+        }
+const githubRepos = await fetchGithubRepos(githubToken, githubUsername);
+console.log('GitHub repositories:', githubRepos);
+
+console.log('Login token and userId:', githubToken);
+return { githubToken, userId: user.id, username: user.username, githubUsername: existingGithubUsername, githubRepos};
 }catch (error) {
     console.error('Error in loginUser:', error);
     throw error;
 }
+};
+
+const fetchGithubRepos = async (token, githubUsername) => {
+    try {
+        const response = await axios.get(`https://api.github.com/users/${githubUsername}/repos`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching GitHub repositories:', error);
+        throw new Error('Failed to fetch GitHub repositories');
+    }
 };
 
 const updateGithubUsername = async (userId, githubUsername) => {
