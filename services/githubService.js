@@ -2,12 +2,18 @@ import axios from 'axios';
 
 const GITHUB_API_BASE_URL = 'https://api.github.com';
 
-const getAuthHeaders = (accessToken) => ({
-  headers: {
-    Authorization: `Bearer ${accessToken}`,
-    Accept: 'application/vnd.github.v3+json',
-  },
-});
+const getAuthHeaders = (accessToken) => {
+  const token = accessToken || process.env.GITHUB_TOKEN;
+  if (!token) {
+    console.warn("Access token is missing. Ensure you provide one.");
+  }
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github.v3+json',
+    },
+  };
+};
 
 const fetchAllPages = async (url, accessToken) => {
   let page = 1;
@@ -20,6 +26,11 @@ const fetchAllPages = async (url, accessToken) => {
         ...getAuthHeaders(accessToken),
         params: { per_page: 100, page },
       });
+
+      if (response.headers['x-ratelimit-remaining'] === '0') {
+        console.warn('Rate limit exceeded. Try again later.');
+        throw new Error('GitHub API rate limit exceeded.');
+      }
 
       results = [...results, ...response.data];
       hasNextPage = response.data.length === 100;
@@ -34,9 +45,9 @@ const fetchAllPages = async (url, accessToken) => {
 };
 
 const githubService = {
-  getUserData: async (username, accessToken) => {
+  getUserData: async (login, accessToken) => {
     try {
-      const response = await axios.get(`${GITHUB_API_BASE_URL}/users/${username}`, getAuthHeaders(accessToken));
+      const response = await axios.get(`${GITHUB_API_BASE_URL}/users/${login}`, getAuthHeaders(accessToken));
       return response.data;
     } catch (error) {
       console.error('Error fetching user data:', error.response ? error.response.data : error.message);
@@ -44,18 +55,19 @@ const githubService = {
     }
   },
 
-  getUserRepos: async (username, accessToken) => {
+  getUserRepos: async (login, accessToken) => {
     try {
-      return await fetchAllPages(`${GITHUB_API_BASE_URL}/users/${username}/repos`, accessToken);
+      return await fetchAllPages(`${GITHUB_API_BASE_URL}/users/${login}/repos`, accessToken);
     } catch (error) {
       console.error('Error fetching user repositories:', error.response ? error.response.data : error.message);
       throw error;
     }
   },
 
-  getRepoDetails: async (username, repo, accessToken) => {
+  getRepoDetails: async (login, repo, accessToken) => {
     try {
-      const response = await axios.get(`${GITHUB_API_BASE_URL}/repos/${username}/${repo}`, getAuthHeaders(accessToken));
+      const response = await axios.get(`${GITHUB_API_BASE_URL}/repos/${login}/${repo}`, getAuthHeaders(accessToken));
+      console.log('Access Token:', accessToken);
       return response.data;
     } catch (error) {
       console.error('Error fetching repository details:', error.response ? error.response.data : error.message);
@@ -63,18 +75,18 @@ const githubService = {
     }
   },
 
-  getRepoCommits: async (username, repo, accessToken) => {
+  getRepoCommits: async (login, repo, accessToken) => {
     try {
-      return await fetchAllPages(`${GITHUB_API_BASE_URL}/repos/${username}/${repo}/commits`, accessToken);
+      return await fetchAllPages(`${GITHUB_API_BASE_URL}/repos/${login}/${repo}/commits`, accessToken);
     } catch (error) {
       console.error('Error fetching repository commits:', error.response ? error.response.data : error.message);
       throw error;
     }
   },
 
-  getRepoLanguages: async (username, repo, accessToken) => {
+  getRepoLanguages: async (login, repo, accessToken) => {
     try {
-      const response = await axios.get(`${GITHUB_API_BASE_URL}/repos/${username}/${repo}/languages`, getAuthHeaders(accessToken));
+      const response = await axios.get(`${GITHUB_API_BASE_URL}/repos/${login}/${repo}/languages`, getAuthHeaders(accessToken));
       return response.data;
     } catch (error) {
       console.error('Error fetching repository languages:', error.response ? error.response.data : error.message);

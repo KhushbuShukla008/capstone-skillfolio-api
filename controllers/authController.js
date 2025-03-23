@@ -22,8 +22,20 @@ try {
 
 const loginUser = async (req, res) => {
 try {
-    const { token, userId } = await authService.loginUser(req.body);
-    res.status(200).json({ token, userId});
+    const { email, password, githubUsername } = req.body;
+    const { token, userId, username, githubUsername: existingGithubUsername} = await authService.loginUser({email, password, githubUsername });
+
+    if (githubUsername && existingGithubUsername !== githubUsername) {
+        console.warn('GitHub username mismatch detected. Updating GitHub username.');
+        await authService.updateGithubUsername(userId, githubUsername);
+    }
+    
+    res.status(200).json({ token, 
+        user: { 
+            id: userId, 
+            username, 
+            githubUsername: existingGithubUsername || 'No GitHub Username',
+            loginMethod: githubUsername ? 'GitHub OAuth' : 'Email & Password' }});
 } catch (error) {
     res.status(400).json({ error: error.message });
 }

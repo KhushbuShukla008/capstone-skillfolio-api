@@ -3,16 +3,14 @@ import githubService from '../services/githubService.js';
 
 const createPortfolio = async (req, res) => {
 const { repo, title, description } = req.body;
-const { username } = req.user;
-const accessToken = req.headers.authorization?.split(' ')[1];
+const { username } = req.user || {};
 
-if (!accessToken) {
-    return res.status(401).json({ error: 'Access token required' });
+if (!username) {
+    return res.status(401).json({ error: 'User not authenticated' });
 }
 
 try {
-    
-    const repoDetails = await githubService.getRepoDetails(username, repo, accessToken);
+    const repoDetails = await githubService.getRepoDetails(username, repo);
 
     const [portfolioId] = await db('portfolios').insert({ repo, title, description, username });
     res.status(201).json({ id: portfolioId, repo, title, description, repoDetails });

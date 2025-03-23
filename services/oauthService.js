@@ -1,5 +1,6 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
+import db from '../config/db.js';
 
 dotenv.config();
 
@@ -24,9 +25,38 @@ try {
         headers: { Authorization: `token ${accessToken}` },
     });
         console.log('GitHub user response:', userResponse.data);
-        const userId = userResponse.data.id;
+        const { id: githubUserId, login: githubLogin, email: githubEmail, name, avatar_url } = userResponse.data;
+        let user = await db('users').where({ github_username: githubLogin }).first();
+        if (!user && githubEmail) {
+            user = await db('users').where({ email: githubEmail }).first();
+            if (user) {
+                await db('users').where({ id: user.id }).update({ github_username: githubLogin });
+            } else {
+                await db('users').insert({
+                    username: name || githubLogin, 
+                    email: githubEmail || '', 
+                    password: '', 
+                    github_username: githubLogin,
+                    avatar_url: avatar_url || '', 
+                    github_user_id: githubUserId
+                }).returning('*');
+                user = user[0];
+            }
+        }
+        if (!user) {
+            user = await db('users').insert({
+                username: name || githubLogin, 
+                email: githubEmail || '', 
+                password: '', 
+                github_username: githubLogin,
+                avatar_url: avatar_url || '', 
+                github_user_id: githubUserId 
+            }).returning('*');  
+            user = user[0];  
+        }
 
-    return { accessToken, userId };
+
+    return { accessToken, userId: user.id, githubLogin, githubUserId };
     }   catch (error) {
     console.error('Error getting access token:', error.response ? error.response.data : error.message);
     throw error;
