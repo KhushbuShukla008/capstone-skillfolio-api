@@ -3,23 +3,22 @@ import githubService from '../services/githubService.js';
 
 const createPortfolio = async (req, res) => {
     const { repo, title, description, login } = req.body;
-    const { username } = req.user || { username: login }; 
-
-    if (!username) {
-    return res.status(401).json({ error: 'User not authenticated' });
-    }
-
     try {
-    const repoDetails = await githubService.getRepoDetails(username, repo);
+        let [user] = await db('users').where({ github_username: login });
+        
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+    const repoDetails = await githubService.getRepoDetails(login, repo);
 
     const [portfolioId] = await db('projects').insert({
-        user_id: 1,  
+        user_id: user.id,
+        repo_name: repo,
         project_name: title,
         description,
         tech_stack: repoDetails.language,  
         github_link: repoDetails.html_url,  
     }).returning('id');  
-
     
     res.status(201).json({
     id: portfolioId,
