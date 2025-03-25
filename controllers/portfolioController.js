@@ -35,10 +35,18 @@ const createPortfolio = async (req, res) => {
 
 const viewPortfolio = async (req, res) => {
     const { id } = req.params;
-
+    console.log("Request params:", req.params);
     try {
+        if (!id) {
+            return res.status(400).json({ error: 'Invalid portfolio ID' });
+        }
+        const projectExists = await db('projects').first();
+        if (!projectExists) {
+        return res.status(404).json({ error: 'No projects found in the database' });
+        }
+
         const project = await db('projects')
-        .where({ id })
+        .where({ user_id: parseInt(id) })
         .first(); 
         if (!project) {
         return res.status(404).json({ error: 'Portfolio not found' });

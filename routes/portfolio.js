@@ -16,6 +16,6 @@ router.get('/:userId/repos', async (req, res) => {
 });
 
 router.post('/', createPortfolio);
-router.get('/:userId', viewPortfolio);
+router.get('/:id', viewPortfolio);
 
 export default router;
