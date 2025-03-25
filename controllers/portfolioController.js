@@ -3,7 +3,7 @@ import githubService from '../services/githubService.js';
 
 const createPortfolio = async (req, res) => {
     const { repo, title, description, login } = req.body;
-    const { username } = req.user || { username: login }; // Fallback for user authentication
+    const { username } = req.user || { username: login }; 
 
     if (!username) {
     return res.status(401).json({ error: 'User not authenticated' });
