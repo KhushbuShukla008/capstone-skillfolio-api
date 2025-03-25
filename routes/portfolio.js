@@ -1,7 +1,7 @@
 import express from 'express';
 import githubService from '../services/githubService.js';
 import { createPortfolio, viewPortfolio } from '../controllers/portfolioController.js';
-import authenticate from '../middleware/authenticate.js';
+
 const router = express.Router();
 
 router.get('/:userId/repos', async (req, res) => {
@@ -15,7 +15,7 @@ router.get('/:userId/repos', async (req, res) => {
   }
 });
 
-router.post('/', authenticate, createPortfolio);
-router.get('/:userId', authenticate, viewPortfolio);
+router.post('/', createPortfolio);
+router.get('/:userId', viewPortfolio);
 
 export default router;
