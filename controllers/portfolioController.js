@@ -14,7 +14,7 @@ const createPortfolio = async (req, res) => {
     const [portfolioId] = await db('projects').insert({
         user_id: user.id,
         repo_name: repo,
-        project_name: title,
+        project_title: title,
         description,
         tech_stack: repoDetails.language,  
         github_link: repoDetails.html_url,  

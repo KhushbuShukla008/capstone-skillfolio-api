@@ -37,19 +37,19 @@ try {
                     email: githubEmail || '', 
                     password: '', 
                     github_username: githubLogin,
-                    avatar_url: avatar_url || '', 
+                    // avatar_url: avatar_url || '', 
                     github_user_id: githubUserId
                 }).returning('*');
                 user = newUser;
             }
         }
         if (!user) {
-            user = await db('users').insert({
+            user [newUser]= await db('users').insert({
                 username: name || githubLogin, 
                 email: githubEmail || '', 
                 password: '', 
                 github_username: githubLogin,
-                avatar_url: avatar_url || '', 
+                // avatar_url: avatar_url || '', 
                 github_user_id: githubUserId 
             }).returning('*');  
             user = newUser;  

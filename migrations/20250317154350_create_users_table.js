@@ -9,6 +9,7 @@ export async function up(knex) {
     table.string('email', 255).notNullable().unique();
     table.string('password', 255).notNullable();
     table.string('github_username', 255);
+    table.integer('github_user_id').nullable();
   });
 }
 
