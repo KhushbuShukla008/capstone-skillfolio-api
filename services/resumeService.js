@@ -1,6 +1,6 @@
 import db from '../config/db.js'; 
-import { generateDescription } from './aiService.js'; 
-import fs from fs;
+import { generateResumeDescription } from './aiService.js'; 
+import fs from 'fs';
 import PDFDocument from 'pdfkit';
 
 const generateResume = async (userId, templateType) => {
@@ -10,26 +10,24 @@ const generateResume = async (userId, templateType) => {
         if (!userProjects.length) {
             throw new Error('No projects found for this user.');
         }
+        const resumeDescription = await generateResumeDescription({ userProjects });
         let resumeData;
         if (templateType === 'github') {
-            const projectsWithDescription = [];
-            for (const project of userProjects) {
-                const description = await generateDescription(project.repo_name);
-                projectsWithDescription.push({
-                    title: project.project_title,
-                    description: description, 
-                    tech_stack: project.tech_stack,
-                    github_link: project.github_link,
-                });
-            }
             resumeData = {
                 user: { name: 'User Name', github: 'https://github.com/username' },
-                projects: projectsWithDescription,
+                description: resumeDescription.description,
+                projects: userProjects.map(project => ({
+                    title: project.project_title,
+                    description: project.description,
+                    tech_stack: project.tech_stack,
+                    github_link: project.github_link,
+                })),
             };
         } else {
             resumeData = {
             user: { name: 'User Name', skills: 'JavaScript, HTML, CSS' },
-                experience: userProjects,
+            description: resumeDescription.description,
+            experience: userProjects,
         };
         }
         return resumeData;
@@ -60,6 +58,9 @@ const generatePDF = (resumeData) => {
     doc.pipe(fs.createWriteStream(filePath));
 
     doc.fontSize(25).text('My Resume', { align: 'center' });
+    doc.fontSize(18).text('Resume Summary', { align: 'left' });
+    doc.fontSize(14).text(resumeData.description);
+    doc.moveDown();
 
     doc.fontSize(18).text('Projects', { align: 'left' });
     resumeData.content.projects.forEach(project => {
@@ -71,7 +72,6 @@ const generatePDF = (resumeData) => {
     });
 
     doc.end();
-
     return filePath;
 };
 

@@ -5,11 +5,11 @@ const client = new OpenAI({
 });
 
 export const generateDescription = async (req, res) => {
-    // const { repoName } = req.body;
+    const { repoName } = req.body;
 
-    // if (!repoName) {
-    //     return res.status(400).json({ error: 'Repository name is required' });
-    // }
+    if (!repoName) {
+        return res.status(400).json({ error: 'Repository name is required' });
+    }
 
     try {
         const completion = await client.chat.completions.create({

@@ -1,4 +1,4 @@
-import { generateResume, saveResumeToDB, generatePDF } from '../services/resumeService';
+import { generateResume, saveResumeToDB, generatePDF } from '../services/resumeService.js';
 
 const generateResumeController = async (req, res) => {
     const { userId, templateType } = req.body;
