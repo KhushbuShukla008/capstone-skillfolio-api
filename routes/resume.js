@@ -1,18 +1,10 @@
 import express from 'express';
-import githubService from '../services/githubService.js';
+import { generateResumeController, saveResumeController, downloadPDFController } from '../controllers/resumeController.js';
 
 const router = express.Router();
 
-// Example resume route
-router.get('/:userId', async (req, res) => {
-  const { userId } = req.params;
-  // Fetch user data from GitHub using githubService
-  try {
-    const userData = await githubService.getUserData(userId);
-    res.json(userData);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.post('/generate', generateResumeController);  
+router.post('/save', saveResumeController);          
+router.post('/download', downloadPDFController); 
 
 export default router;
