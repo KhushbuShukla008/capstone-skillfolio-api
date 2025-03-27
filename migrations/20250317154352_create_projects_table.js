@@ -9,7 +9,7 @@ export async function up(knex) {
       table.string('repo_name', 255).notNullable();
       table.string('project_title', 255).notNullable();
       table.text('description');
-      table.string('tech_stack', 255);
+      table.text('tech_stack');
       table.string('github_link', 255);                         
       table.timestamps(true, true);                           
 

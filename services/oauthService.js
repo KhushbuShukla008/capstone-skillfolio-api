@@ -26,32 +26,35 @@ try {
     });
         console.log('GitHub user response:', userResponse.data);
         const { id: githubUserId, login: githubLogin, email: githubEmail, name, avatar_url } = userResponse.data;
+        
         let user = await db('users').where({ github_username: githubLogin }).first();
         if (!user && githubEmail) {
             user = await db('users').where({ email: githubEmail }).first();
             if (user) {
                 await db('users').where({ id: user.id }).update({ github_username: githubLogin });
             } else {
-                await db('users').insert({
-                    username: name || githubLogin, 
-                    email: githubEmail || '', 
-                    password: '', 
+                const insertedUsers = await db('users').insert({
+                    username: name || githubLogin,
+                    email: githubEmail || '',
+                    password: '',
                     github_username: githubLogin,
-                    // avatar_url: avatar_url || '', 
                     github_user_id: githubUserId
-                }).returning('*');
+                }).returning('*');  
+                
+                const newUser = insertedUsers[0]; 
                 user = newUser;
             }
         }
         if (!user) {
-            user [newUser]= await db('users').insert({
-                username: name || githubLogin, 
-                email: githubEmail || '', 
-                password: '', 
+            const insertedUsers = await db('users').insert({
+                username: name || githubLogin,
+                email: githubEmail || '',
+                password: '',
                 github_username: githubLogin,
-                // avatar_url: avatar_url || '', 
-                github_user_id: githubUserId 
+                github_user_id: githubUserId
             }).returning('*');  
+            
+            const newUser = insertedUsers[0];  
             user = newUser;  
         }
 

@@ -1,8 +1,17 @@
 import db from '../config/db.js';
 import githubService from '../services/githubService.js';
+const isValidJson = (str) => {
+    try {
+        JSON.parse(str);
+        return true;
+    } catch (error) {
+        return false;
+    }
+};
 
 const createPortfolio = async (req, res) => {
-    const { repo, title, description, login } = req.body;
+    const { repo, title, description, login, language } = req.body;
+    console.log("Parsed language:", language);
     try {
         let [user] = await db('users').where({ github_username: login });
         
@@ -16,7 +25,7 @@ const createPortfolio = async (req, res) => {
         repo_name: repo,
         project_title: title,
         description,
-        tech_stack: repoDetails.language,  
+        tech_stack: JSON.stringify(language),  
         github_link: repoDetails.html_url,  
     }).returning('id');  
     
@@ -45,12 +54,20 @@ const viewPortfolio = async (req, res) => {
         return res.status(404).json({ error: 'No projects found in the database' });
         }
 
-        const projects = await db('projects')
-        .where({ user_id: parseInt(id) }); 
+        // const projects = await db('projects')
+        // .where({ user_id: parseInt(id) }); 
+        
+        const projects = await db('projects').where({ user_id: parseInt(id) });
         if (!projects || projects.length === 0) {
         return res.status(404).json({ error: 'No projects found for this user' });
         }
-        res.status(200).json(projects);
+        const formattedProjects = projects.map(project => ({
+            ...project,
+            tech_stack: isValidJson(project.tech_stack) 
+            ? JSON.parse(project.tech_stack) 
+            : project.tech_stack.split(', ').map(lang => lang.trim())
+        }));
+        res.status(200).json(formattedProjects);
     } catch (error) {
         console.error('Error fetching portfolio:', error);
         res.status(500).json({ error: 'Failed to retrieve portfolio' });

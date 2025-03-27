@@ -40,6 +40,7 @@ const downloadPDFController = async (req, res) => {
         const pdf = generatePDF(resumeData);
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', 'attachment; filename="resume.pdf"');
+        // res.setHeader('Content-Length', resumeData.length);
         res.download(pdf);
     } catch (error) {
         console.error("Error generating PDF:", error);
