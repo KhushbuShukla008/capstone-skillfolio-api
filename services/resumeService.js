@@ -88,7 +88,6 @@ const generatePDF = (resumeData) => {
     doc.fontSize(25).text('My Portfolio', { align: 'center' });
     doc.moveDown();
 
-    // doc.fontSize(18).text('Resume Summary', { align: 'left' });
     doc.fontSize(14).text(resumeData.description|| 'No description available.');
     doc.moveDown();
 

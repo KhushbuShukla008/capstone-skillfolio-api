@@ -19,7 +19,7 @@ export const generateResumeDescription = async (req) => {
         const skills = userProjects.map(project => project.tech_stack).join(', ');
 
         const prompt = `
-        Based on the following projects and skills, create a professional resume summary that highlights the user's experience and capabilities. Include a brief introduction, mention the tech stack, and provide a summary of the user's expertise.
+        Based on the following projects and skills, create a professional Portfolio summary that highlights the user's experience and capabilities. Include a brief introduction, mention the tech stack, and provide a summary of the user's expertise.
         console.log('Generated Prompt:', prompt);
 
         Projects:
