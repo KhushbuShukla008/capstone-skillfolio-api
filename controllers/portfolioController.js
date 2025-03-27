@@ -47,7 +47,6 @@ const viewPortfolio = async (req, res) => {
 
         const projects = await db('projects')
         .where({ user_id: parseInt(id) }); 
-        console.log("Fetched Projects from DB:", projects);
         if (!projects || projects.length === 0) {
         return res.status(404).json({ error: 'No projects found for this user' });
         }
